@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fynd Live Performance Feed</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <nav class="nav-tabs" aria-label="Primary">
+          <button class="nav-tab is-active" data-view="live">
+            <span class="icon pulse-icon" aria-hidden="true"></span>
+            Live
+          </button>
+          <button class="nav-tab" data-view="methodology">
+            <span class="icon doc-icon" aria-hidden="true"></span>
+            Methodology
+          </button>
+          <button class="nav-tab" data-view="local">
+            <span class="icon terminal-icon" aria-hidden="true"></span>
+            Run Local
+          </button>
+          <button class="nav-tab" data-view="raw">
+            <span class="icon database-icon" aria-hidden="true"></span>
+            Raw Data
+          </button>
+        </nav>
+        <div class="topbar-actions">
+          <div class="chain-label" aria-label="Network Ethereum">
+            <span>Network</span>
+            <strong>Ethereum</strong>
+          </div>
+          <span class="live-dot" aria-label="streaming"></span>
+          <button id="pauseButton" class="icon-button" type="button" aria-label="Pause live stream" title="Pause live stream">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 6v12M16 6v12" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section id="liveView" class="view is-active" aria-labelledby="liveTitle">
+          <div class="proof-hero">
+            <div class="hero-copy">
+              <h1 id="liveTitle">PropellerSwap performance feed</h1>
+              <p>Ethereum mainnet CoW Swap solver outcomes, Fynd route traces, and settlement references from the Fynd + Tycho stack.</p>
+            </div>
+            <div class="stream-state">
+              <span class="live-dot"></span>
+              <span id="streamStateText">Streaming every block</span>
+            </div>
+          </div>
+          <div class="source-banner">
+            <strong id="sourceModeTitle">Simulation mode</strong>
+            <span id="sourceModeText">Replaying realistic PropellerSwap sample events every few seconds until production solver logs are connected to POST /api/events.</span>
+          </div>
+
+          <section class="spotlight-grid" aria-label="Route decision spotlight">
+            <article id="routeDecisionSpotlight" class="spotlight-card">
+              <div class="spotlight-kicker">Route decision spotlight</div>
+              <div class="spotlight-main">
+                <div>
+                  <h2 id="spotlightPair">-</h2>
+                  <p id="spotlightSummary">Waiting for the latest route trace.</p>
+                </div>
+                <strong id="spotlightSolve">- ms</strong>
+              </div>
+              <div class="route-ladder" id="spotlightCandidates" aria-label="Top candidate routes"></div>
+            </article>
+            <article class="evidence-card">
+              <h2>What this proves today</h2>
+              <p>Not global optimality. The immediate claim is stricter and more useful: for each auction, PropellerSwap can expose the route Fynd selected, the candidates it evaluated, the timing envelope, and the external settlement trail.</p>
+              <dl>
+                <div><dt>Solver</dt><dd>PropellerSwap</dd></div>
+                <div><dt>Router</dt><dd>Fynd</dd></div>
+                <div><dt>State</dt><dd>Tycho live index</dd></div>
+                <div><dt>Scope</dt><dd>Ethereum mainnet</dd></div>
+              </dl>
+            </article>
+          </section>
+
+          <section class="metrics-grid" aria-label="Aggregate statistics">
+            <article class="metric">
+              <span class="metric-label">Median solve time</span>
+              <strong id="medianSolve">0 ms</strong>
+              <span class="metric-sub">submitted auctions</span>
+            </article>
+            <article class="metric">
+              <span class="metric-label">Win rate</span>
+              <strong id="winRate">0%</strong>
+              <span class="metric-sub">wins / submitted</span>
+            </article>
+            <article class="metric">
+              <span class="metric-label">Total volume routed</span>
+              <strong id="volumeRouted">$0</strong>
+              <span class="metric-sub">visible feed window</span>
+            </article>
+            <article class="metric">
+              <span class="metric-label">Avg candidates</span>
+              <strong id="candidateAverage">0</strong>
+              <span class="metric-sub">per route trace</span>
+            </article>
+          </section>
+
+          <div class="content-grid">
+            <section id="auctionFeed" class="feed-panel" aria-label="Auction feed">
+              <div class="panel-toolbar">
+                <div>
+                  <h2>Auction Feed</h2>
+                  <span id="feedCount">0 entries</span>
+                </div>
+                <div class="toolbar-controls">
+                  <label>
+                    <span>Outcome</span>
+                    <select id="outcomeFilter">
+                      <option value="all">All</option>
+                      <option value="won">Won</option>
+                      <option value="lost">Lost</option>
+                      <option value="timeout">Timeout</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Trace</span>
+                    <select id="traceFilter">
+                      <option value="all">All</option>
+                      <option value="complete">Complete</option>
+                      <option value="partial">Partial</option>
+                      <option value="pending">Pending</option>
+                    </select>
+                  </label>
+                  <button id="downloadVisible" class="text-button" type="button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 4v10m0 0l4-4m-4 4l-4-4M5 20h14" />
+                    </svg>
+                    JSON
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Solve</th>
+                      <th>Pair</th>
+                      <th>Trade size</th>
+                      <th>Route computed</th>
+                      <th>Block</th>
+                      <th>Auction ID</th>
+                      <th>Fynd commit</th>
+                      <th>Route trace</th>
+                      <th>Verify</th>
+                    </tr>
+                  </thead>
+                  <tbody id="feedBody"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <aside id="evidenceChain" class="verification-panel" aria-label="Verification summary">
+              <section>
+                <h2>Evidence Chain</h2>
+                <p>Each row is designed to connect four records: the CoW auction, the PropellerSwap solve event, the Fynd candidate route trace, and the settlement transaction when the order wins.</p>
+                <p id="tychoSummaryText" class="summary-line">Checking Tycho summary...</p>
+              </section>
+              <section class="checklist">
+                <h3>Production Gate</h3>
+                <ul>
+                  <li><span class="check"></span> Wins, losses, and timeouts represented</li>
+                  <li><span class="check"></span> Candidate route trace exposed</li>
+                  <li><span class="check"></span> Raw export for the visible range</li>
+                  <li><span id="tychoStatusDot" class="check pending"></span><span id="tychoStatusText">Tycho RPC not checked</span></li>
+                  <li><span id="fyndStatusDot" class="check pending"></span><span id="fyndStatusText">Fynd service not checked</span></li>
+                  <li><span id="eventSourceDot" class="check pending"></span><span id="eventSourceText">Simulation data active until production solver events are ingested</span></li>
+                </ul>
+              </section>
+              <section class="rate-box">
+                <h3>Route Trace Breakdown</h3>
+                <dl>
+                  <div><dt>Complete</dt><dd id="completeCount">0</dd></div>
+                  <div><dt>Partial</dt><dd id="partialCount">0</dd></div>
+                  <div><dt>Pending</dt><dd id="pendingCount">0</dd></div>
+                </dl>
+              </section>
+            </aside>
+          </div>
+        </section>
+
+        <section id="methodologyView" class="view narrow-view" aria-labelledby="methodologyTitle">
+          <h1 id="methodologyTitle">Methodology</h1>
+          <p class="methodology-lede">The feed is a credibility surface, not a scoreboard. It shows how PropellerSwap reached a route decision when using Fynd over Tycho state, and separates evidence available today from future optimality claims.</p>
+          <div class="methodology-grid">
+            <article>
+              <h2>Benchmark Cycle</h2>
+              <p>A production event should be emitted when PropellerSwap receives a CoW auction, computes a Fynd route, submits or skips, and records the auction result. The dashboard then renders the event as an evidence trail, not as a private internal log.</p>
+            </article>
+            <article>
+              <h2>Route Inspection</h2>
+              <p>Expanded rows show candidate routes Fynd evaluated during the solve, the chosen path, estimated output, gas, net score, and the algorithm label that produced each candidate.</p>
+            </article>
+            <article>
+              <h2>What Is Verifiable</h2>
+              <p>CoW Explorer verifies auction outcomes. Etherscan verifies settlement transactions for wins. Fynd's public routing logic makes candidate evaluation inspectable instead of asking the reader to trust a black-box router.</p>
+            </article>
+            <article>
+              <h2>Future Proof Layer</h2>
+              <p>Historical no-time-limit re-solves remain a roadmap item. They become meaningful once Tycho historical replay is implemented and solving algorithms are complex enough for auction time to constrain the result.</p>
+            </article>
+            <article>
+              <h2>Current Simulation Boundary</h2>
+              <p>Only the auction events are simulated in this PoC. The Tycho proxy, Fynd build, local server, event ingestion endpoint, filtering, route expansion, and export path are production-shaped.</p>
+            </article>
+            <article>
+              <h2>Why This Is Different</h2>
+              <p>The product does not ask users to believe PropellerSwap is good because a chart says so. It lets them inspect the actual route decision pattern behind each visible auction.</p>
+            </article>
+          </div>
+          <section class="schema-panel">
+            <h2>Production Event Contract</h2>
+            <pre><code>{
+  "auctionId": "0x6de9...b0ad",
+  "blockNumber": 19872343,
+  "solverCommit": "a1b2c3d",
+  "pair": "WETH / wstETH",
+  "tradeSizeUsd": 1450000,
+  "solveTimeMs": 356,
+  "outcome": "won",
+  "route": ["CoW AMM", "Curve"],
+  "settlementTx": "0xd51f...",
+  "routeTrace": {
+    "status": "complete",
+    "chosenReason": "highest net output after gas",
+    "candidateRoutes": []
+  }
+}</code></pre>
+          </section>
+        </section>
+
+        <section id="localView" class="view narrow-view" aria-labelledby="localTitle">
+          <div class="raw-header">
+            <div>
+              <h1 id="localTitle">Run It Yourself</h1>
+              <p>Stream live CoW orders, solve them locally with Fynd, then modify the algorithm and compare your route decisions against PropellerSwap's public feed. This is solve-only; submitting settlements requires being a registered CoW solver.</p>
+            </div>
+          </div>
+          <div class="methodology-grid">
+            <article>
+              <h2>Local Loop</h2>
+              <p>Start Fynd locally, subscribe to live CoW orders, run the same route search, and compare candidate routes, scores, and selected paths against the production feed.</p>
+            </article>
+            <article>
+              <h2>Experiment Surface</h2>
+              <p>Change algorithm weights, route depth, pool filters, gas assumptions, or worker-pool strategy. The point is not to trust the dashboard, but to see whether your machine can find a better route.</p>
+            </article>
+          </div>
+          <section class="schema-panel">
+            <h2>Local Commands</h2>
+            <pre><code>.\scripts\start-fynd.ps1
+.\scripts\start-feed.ps1
+
+# Future production stream command
+fynd-cow-stream --solve-only --compare http://127.0.0.1:4173</code></pre>
+          </section>
+        </section>
+
+        <section id="rawView" class="view narrow-view" aria-labelledby="rawTitle">
+          <div class="raw-header">
+            <div>
+              <h1 id="rawTitle">Raw Data Export</h1>
+              <p>Select a local feed window and download the exact JSON or CSV displayed by the product surface.</p>
+            </div>
+            <div class="raw-actions">
+              <button id="downloadJson" class="text-button" type="button">Download JSON</button>
+              <button id="downloadCsv" class="text-button" type="button">Download CSV</button>
+            </div>
+          </div>
+          <div class="export-controls">
+            <label>
+              <span>From</span>
+              <input id="fromBlock" type="number" min="0" />
+            </label>
+            <label>
+              <span>To</span>
+              <input id="toBlock" type="number" min="0" />
+            </label>
+          </div>
+          <pre id="rawPreview" class="raw-preview"></pre>
+        </section>
+      </main>
+    </div>
+
+    <template id="routeDetailsTemplate">
+      <tr class="details-row">
+        <td colspan="10">
+          <div class="details-card">
+            <div class="details-meta"></div>
+            <div class="candidate-list"></div>
+          </div>
+        </td>
+      </tr>
+    </template>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
