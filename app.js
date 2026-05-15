@@ -149,6 +149,21 @@ const simulatedEvents = [
       candidate(5, ["Balancer V2"], 0, "34.600187 WETH", "-0.9212%", "0.002810", "most-liquid"),
     ],
   }),
+  event({
+    auctionId: "0x9be4f2aa1d3c7e0b88f1a6c20e4d9f70b3a2c51e87d0f6b3c912e4a5d8b7f022",
+    blockNumber: 19872337,
+    solverCommit: "fynd-a1b2c3d",
+    pair: "MKR / WETH",
+    tradeSizeUsd: 142000,
+    tradeSizeDisplay: "56.00 MKR",
+    solveTimeMs: null,
+    outcome: "timeout",
+    route: [],
+    settlementTx: null,
+    traceStatus: "pending",
+    chosenReason: "auction expired before solver returned a valid route",
+    candidates: [],
+  }),
 ];
 
 function event({ traceStatus = "complete", candidates, chosenReason, ...item }) {
@@ -265,11 +280,12 @@ function renderSourceMode() {
   const dot = document.querySelector("#eventSourceDot");
   const label = document.querySelector("#eventSourceText");
 
+  const badge = document.querySelector("#sourceBadge");
+
   if (simulationMode) {
     title.textContent = staticDemoMode ? "GitHub Pages demo" : "Simulation mode";
-    text.textContent = staticDemoMode
-      ? "Replaying realistic PropellerSwap sample events. Run locally to enable Tycho checks and production event ingestion."
-      : "Replaying realistic PropellerSwap sample events every few seconds until production solver logs are connected to POST /api/events.";
+    text.textContent = "Only auction events are sample data. Tycho proxy, event ingestion, filtering, and export are production-shaped.";
+    if (badge) badge.classList.remove("is-production");
     dot.classList.add("pending");
     label.textContent = staticDemoMode
       ? "Static demo replay active; server endpoints are disabled on GitHub Pages"
@@ -277,6 +293,7 @@ function renderSourceMode() {
   } else {
     title.textContent = "Production event mode";
     text.textContent = "Rendering real PropellerSwap solver events received by POST /api/events.";
+    if (badge) badge.classList.add("is-production");
     dot.classList.remove("pending", "failed");
     label.textContent = "Production solver events are being ingested";
   }
@@ -406,7 +423,7 @@ function renderSpotlight() {
   els.spotlightCandidates.innerHTML = item.routeTrace.candidates.slice(0, 4).map((candidate) => `
     <div class="route-step ${candidate.chosen ? "is-chosen" : ""}">
       <span class="route-rank">#${candidate.rank}</span>
-      <span class="route-name">${candidate.route.join(" -> ")}</span>
+      <span class="route-name">${candidate.route.join(" → ")} <span style="opacity:0.55;font-size:11px">${candidate.algorithm || ""}</span></span>
       <span class="route-score">${candidate.netScore}</span>
       <span class="route-gas">${candidate.gasEth} ETH</span>
     </div>
@@ -427,9 +444,9 @@ function renderFeed() {
 
   visible.forEach((item) => {
     const row = document.createElement("tr");
-    row.className = "feed-row";
+    row.className = `feed-row ${item.outcome}`;
     row.innerHTML = `
-      <td><button class="expand-button" type="button" aria-label="Inspect route for ${item.auctionId}" data-expand="${item.auctionId}">${expandedId === item.auctionId ? "-" : "+"}</button><span class="status ${item.outcome}">${item.outcome}</span></td>
+      <td><button class="expand-button" type="button" aria-label="Inspect route for auction ${short(item.auctionId)}" aria-expanded="${expandedId === item.auctionId}" data-expand="${item.auctionId}">${expandedId === item.auctionId ? "−" : "+"}</button><span class="status ${item.outcome}">${item.outcome}</span></td>
       <td>${item.solveTimeMs ? `<span class="${item.solveTimeMs > 500 ? "solve-slow" : "solve-fast"}">${item.solveTimeMs} ms</span>` : `<span class="muted">-</span>`}</td>
       <td class="mono">${item.pair}</td>
       <td><span class="mono">${item.tradeSizeDisplay || "-"}</span><br><span class="muted">$${number(item.tradeSizeUsd, 0)}</span></td>
