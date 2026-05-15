@@ -374,7 +374,7 @@ async function fetchJson(url) {
 
 function applyServiceStatus(dot, text, ok, payload, label) {
   dot.classList.toggle("pending", !ok);
-  dot.classList.toggle("failed", !ok);
+  dot.classList.toggle("failed", false);
   text.textContent = ok ? `${label} connected` : `${label}: ${payload.message || payload.status || "not ready"}`;
 }
 
@@ -419,7 +419,7 @@ function renderSpotlight() {
   const chosen = item.routeTrace.candidates.find((candidate) => candidate.chosen) || item.routeTrace.candidates[0];
   els.spotlightPair.textContent = item.pair;
   els.spotlightSolve.textContent = `${item.solveTimeMs ?? "-"} ms`;
-  els.spotlightSummary.textContent = `${item.outcome.toUpperCase()} at block ${item.blockNumber}: ${chosen.route.join(" -> ")} selected because ${item.routeTrace.chosenReason}.`;
+  els.spotlightSummary.textContent = `${item.outcome.toUpperCase()} at block ${item.blockNumber}: ${chosen.route.join(" → ")} selected because ${item.routeTrace.chosenReason}.`;
   els.spotlightCandidates.innerHTML = item.routeTrace.candidates.slice(0, 4).map((candidate) => `
     <div class="route-step ${candidate.chosen ? "is-chosen" : ""}">
       <span class="route-rank">#${candidate.rank}</span>
@@ -450,7 +450,7 @@ function renderFeed() {
       <td>${item.solveTimeMs ? `<span class="${item.solveTimeMs > 500 ? "solve-slow" : "solve-fast"}">${item.solveTimeMs} ms</span>` : `<span class="muted">-</span>`}</td>
       <td class="mono">${item.pair}</td>
       <td><span class="mono">${item.tradeSizeDisplay || "-"}</span><br><span class="muted">$${number(item.tradeSizeUsd, 0)}</span></td>
-      <td class="route">${item.route.length ? item.route.join(" -> ") : `<span class="muted">No solution submitted</span>`}</td>
+      <td class="route">${item.route.length ? item.route.join(" → ") : `<span class="muted">No solution submitted</span>`}</td>
       <td class="mono">${item.blockNumber}</td>
       <td class="mono">${short(item.auctionId)}</td>
       <td class="mono">${item.solverCommit}</td>
@@ -486,7 +486,7 @@ function detailsRow(item) {
     row.innerHTML = `
       <div class="candidate-rank">#${candidate.rank || ""}</div>
       <div class="candidate-route">
-        <strong>${Array.isArray(candidate.route) ? candidate.route.join(" -> ") : candidate.route || ""}</strong>
+        <strong>${Array.isArray(candidate.route) ? candidate.route.join(" → ") : candidate.route || ""}</strong>
         <span>${candidate.algorithm || ""}</span>
       </div>
       <div class="candidate-stat">
@@ -588,7 +588,12 @@ function compact(value) {
 function setView(view) {
   activeView = view;
   document.querySelectorAll(".view").forEach((node) => node.classList.toggle("is-active", node.id === `${view}View`));
-  document.querySelectorAll(".nav-tab").forEach((node) => node.classList.toggle("is-active", node.dataset.view === view));
+  document.querySelectorAll(".nav-tab").forEach((node) => {
+    const active = node.dataset.view === view;
+    node.classList.toggle("is-active", active);
+    if (active) node.setAttribute("aria-current", "page");
+    else node.removeAttribute("aria-current");
+  });
 }
 
 document.querySelectorAll(".nav-tab").forEach((button) => {
