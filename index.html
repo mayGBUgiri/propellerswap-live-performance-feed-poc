@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PropellerSwap — Fynd + Tycho Solver Feed</title>
-    <meta name="description" content="Public auction outcomes from PropellerSwap running on Fynd + Tycho on Ethereum mainnet. Wins, losses, route decisions, and on-chain settlement links." />
+    <title>PropellerSwap — UniswapX &amp; 1inch Fusion Filler Feed</title>
+    <meta name="description" content="Public fill outcomes from PropellerSwap operating as a filler on UniswapX and resolver on 1inch Fusion. Route decisions, surplus captured, Dutch auction timing, and on-chain settlement links." />
     <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -81,10 +81,10 @@
 
           <div class="proof-hero">
             <div class="hero-copy">
-              <h1 id="liveTitle">Fynd route decisions on CoW auctions — candidates, chosen path, and settlement tx</h1>
-              <p>PropellerSwap is a CoW Swap solver on Ethereum mainnet. This feed shows its auction outcomes running the Fynd router over Tycho state: wins, losses, route decisions, and on-chain verification links.</p>
-              <div class="stack-rail" aria-label="Solver stack">
-                <span class="stack-chip chip-ps">PropellerSwap solver</span>
+              <h1 id="liveTitle">Fynd route decisions on UniswapX and 1inch Fusion orders — fill timing, surplus captured, settlement tx</h1>
+              <p>PropellerSwap is a filler on UniswapX and a resolver on 1inch Fusion on Ethereum mainnet. This feed shows fill outcomes running the Fynd router over Tycho state: fills, losses, Dutch auction timing, route decisions, and on-chain verification links.</p>
+              <div class="stack-rail" aria-label="Filler stack">
+                <span class="stack-chip chip-ps">PropellerSwap filler</span>
                 <span class="stack-arrow" aria-hidden="true">→</span>
                 <span class="stack-chip chip-fynd">Fynd router</span>
                 <span class="stack-arrow" aria-hidden="true">→</span>
@@ -106,23 +106,24 @@
           <!-- Spotlight + evidence -->
           <section class="spotlight-grid" aria-label="Route decision spotlight">
             <article id="routeDecisionSpotlight" class="spotlight-card">
-              <div class="spotlight-kicker">Latest route decision</div>
+              <div class="spotlight-kicker">Latest fill</div>
               <div class="spotlight-main">
                 <div>
                   <h2 id="spotlightPair">-</h2>
                   <p id="spotlightSummary">Waiting for the latest route trace.</p>
                 </div>
-                <strong id="spotlightSolve" aria-label="Solve time">- ms</strong>
+                <strong id="spotlightSolve" aria-label="Fill performance">— bps</strong>
               </div>
               <div class="route-ladder" id="spotlightCandidates" aria-label="Candidate routes"></div>
             </article>
             <article class="evidence-card">
               <h2>What this proves</h2>
-              <p>Not global optimality. The claim is stricter: for each auction you can inspect the route Fynd selected, every candidate evaluated, the timing, and the on-chain settlement trail. Inspect it — don't take it on faith.</p>
+              <p>For each order on UniswapX or 1inch Fusion, you can verify the route Fynd selected, when in the Dutch auction we filled, the surplus captured over the decay curve, and the on-chain fill transaction. Inspect it — don't take it on faith.</p>
               <dl>
-                <div><dt>Solver</dt><dd>PropellerSwap</dd></div>
+                <div><dt>Filler</dt><dd>PropellerSwap</dd></div>
                 <div><dt>Router</dt><dd>Fynd</dd></div>
                 <div><dt>State</dt><dd>Tycho live index</dd></div>
+                <div><dt>Protocols</dt><dd>UniswapX · 1inch Fusion</dd></div>
                 <div><dt>Scope</dt><dd>Ethereum mainnet</dd></div>
               </dl>
             </article>
@@ -136,19 +137,19 @@
               <span class="metric-sub">across submitted auctions</span>
             </article>
             <article class="metric">
-              <span class="metric-label">Win rate</span>
-              <strong id="winRate">0%</strong>
-              <span class="metric-sub">wins / submitted</span>
+              <span class="metric-label">Fill rate</span>
+              <strong id="fillRate">0%</strong>
+              <span class="metric-sub">fills / submitted orders</span>
             </article>
             <article class="metric">
-              <span class="metric-label">Volume routed</span>
+              <span class="metric-label">Volume filled</span>
               <strong id="volumeRouted">$0</strong>
               <span class="metric-sub">visible feed window</span>
             </article>
             <article class="metric">
-              <span class="metric-label">Avg candidates</span>
-              <strong id="candidateAverage">0</strong>
-              <span class="metric-sub">per route trace</span>
+              <span class="metric-label">Avg surplus</span>
+              <strong id="avgSurplus">0 bps</strong>
+              <span class="metric-sub">on successful fills</span>
             </article>
           </section>
 
@@ -165,9 +166,9 @@
                     <span>Outcome</span>
                     <select id="outcomeFilter" aria-label="Filter by outcome">
                       <option value="all">All</option>
-                      <option value="won">Won</option>
+                      <option value="filled">Filled</option>
                       <option value="lost">Lost</option>
-                      <option value="timeout">Timeout</option>
+                      <option value="expired">Expired</option>
                     </select>
                   </label>
                   <label>
@@ -195,11 +196,11 @@
                       <th scope="col">Outcome</th>
                       <th scope="col">Solve</th>
                       <th scope="col">Pair</th>
-                      <th scope="col">Trade size</th>
+                      <th scope="col">Amount</th>
+                      <th scope="col">Surplus</th>
                       <th scope="col">Route computed</th>
                       <th scope="col">Block</th>
-                      <th scope="col">Auction ID</th>
-                      <th scope="col">Fynd commit</th>
+                      <th scope="col">Order ID</th>
                       <th scope="col">Route trace</th>
                       <th scope="col">Verify</th>
                     </tr>
@@ -212,18 +213,18 @@
             <aside id="evidenceChain" class="verification-panel" aria-label="Verification summary">
               <section>
                 <h2>Evidence chain</h2>
-                <p>Each row connects four records: the CoW auction, the PropellerSwap solve event, the Fynd candidate route trace, and the settlement transaction for wins.</p>
+                <p>Each row connects four records: the UniswapX or 1inch Fusion order, the PropellerSwap fill event, the Fynd candidate route trace, and the on-chain fill transaction.</p>
                 <p id="tychoSummaryText" class="summary-line">Checking Tycho summary…</p>
               </section>
               <section class="checklist">
                 <h3>Production gate</h3>
                 <ul>
-                  <li><span class="check" aria-hidden="true"></span> Wins, losses, timeouts represented</li>
+                  <li><span class="check" aria-hidden="true"></span> Fills, losses, expirations represented</li>
                   <li><span class="check" aria-hidden="true"></span> Candidate route trace exposed</li>
                   <li><span class="check" aria-hidden="true"></span> Raw export for the visible range</li>
                   <li><span id="tychoStatusDot" class="check pending" aria-hidden="true"></span><span id="tychoStatusText">Tycho RPC not checked</span></li>
                   <li><span id="fyndStatusDot" class="check pending" aria-hidden="true"></span><span id="fyndStatusText">Fynd service not checked</span></li>
-                  <li><span id="eventSourceDot" class="check pending" aria-hidden="true"></span><span id="eventSourceText">Simulation data active until production solver events are ingested</span></li>
+                  <li><span id="eventSourceDot" class="check pending" aria-hidden="true"></span><span id="eventSourceText">Simulation data active until production filler events are ingested</span></li>
                 </ul>
               </section>
               <section class="rate-box">
@@ -241,44 +242,47 @@
         <!-- ── Methodology view ───────────────────────── -->
         <section id="methodologyView" class="view narrow-view" aria-labelledby="methodologyTitle">
           <h1 id="methodologyTitle">Methodology</h1>
-          <p class="methodology-lede">The feed is a credibility surface, not a scoreboard. It exposes how PropellerSwap reached a route decision using Fynd over Tycho state, and separates what is verifiable today from future optimality claims.</p>
+          <p class="methodology-lede">The feed is a credibility surface, not a scoreboard. It exposes how PropellerSwap fills orders on UniswapX and 1inch Fusion using Fynd over Tycho state, showing fill timing, surplus captured, and route decisions — not just win/loss counts.</p>
           <div class="methodology-grid">
             <article>
               <h2>Current simulation boundary</h2>
-              <p>Only the auction events are simulated in this PoC. The Tycho proxy, Fynd build, local server, event ingestion endpoint, filtering, route expansion, and export path are production-shaped surfaces. Once <code>data/events.json</code> contains real solver events, the UI switches from simulation to production event mode automatically.</p>
+              <p>Only the order events are simulated in this PoC. The Tycho proxy, Fynd build, local server, event ingestion endpoint, filtering, route expansion, and export path are production-shaped surfaces. Once <code>data/events.json</code> contains real filler events, the UI switches to production event mode automatically.</p>
             </article>
             <article>
               <h2>Why losses are shown</h2>
-              <p>Showing losses makes wins credible. A feed that only surfaces wins is marketing. This feed shows all outcomes — wins, losses, timeouts — so solvers evaluating Fynd + Tycho see the full distribution, not a curated sample.</p>
+              <p>Showing losses makes fills credible. A feed that only surfaces wins is marketing. This feed shows all outcomes — fills, losses, expirations — so anyone evaluating Fynd + Tycho sees the full distribution, not a curated sample.</p>
             </article>
             <article>
-              <h2>Benchmark cycle</h2>
-              <p>A production event fires when PropellerSwap receives a CoW auction, computes a Fynd route, submits or skips, and records the auction result. The dashboard renders the event as an evidence trail — not a private internal log.</p>
+              <h2>Dutch auction context</h2>
+              <p>UniswapX and 1inch Fusion use Dutch auctions: order output decays over time until filled or expired. The decay progress column shows how far into that window we filled — lower is better, meaning we acted more competitively and earlier. Combined with surplus bps, this tells the full fill quality story.</p>
             </article>
             <article>
               <h2>Route inspection</h2>
-              <p>Expanded rows show every candidate route Fynd evaluated during the solve: the chosen path, estimated output, gas, net score, and the algorithm label that produced each candidate.</p>
+              <p>Expanded rows show every candidate route Fynd evaluated during the fill: the chosen path, estimated output, gas, net score, and the algorithm label that produced each candidate. The surplus captured is the spread between the Dutch auction output at fill time and our actual routed output.</p>
             </article>
             <article>
               <h2>What is verifiable</h2>
-              <p>CoW Explorer verifies auction outcomes. Etherscan verifies settlement transactions for wins. Fynd's public routing logic makes candidate evaluation inspectable — no black-box claims required.</p>
+              <p>Etherscan verifies fill transactions for successful orders. UniswapX and 1inch Fusion explorer links provide order-level context. Fynd's public routing logic makes candidate evaluation inspectable — no black-box claims required.</p>
             </article>
           </div>
           <section class="schema-panel">
             <h2>Production event contract</h2>
             <pre><code>{
-  "auctionId": "0x6de9...b0ad",
+  "orderId": "0x6de9...b0ad",
+  "protocol": "uniswapx",
   "blockNumber": 19872343,
   "solverCommit": "a1b2c3d",
   "pair": "WETH / wstETH",
   "tradeSizeUsd": 1450000,
   "solveTimeMs": 356,
-  "outcome": "won",
+  "outcome": "filled",
+  "surplusBps": 6,
+  "decayProgress": 14,
   "route": ["CoW AMM", "Curve"],
   "settlementTx": "0xd51f...",
   "routeTrace": {
     "status": "complete",
-    "chosenReason": "highest net output after gas",
+    "chosenReason": "stable pool path dominated after gas and price impact",
     "candidateRoutes": []
   }
 }</code></pre>
@@ -290,17 +294,17 @@
           <div class="raw-header">
             <div>
               <h1 id="localTitle">Run it yourself</h1>
-              <p>Stream live CoW orders, solve them locally with Fynd, then compare route decisions against PropellerSwap's public feed. Solve-only; submitting settlements requires being a registered CoW solver.</p>
+              <p>Stream live UniswapX and 1inch Fusion orders, fill them locally with Fynd, then compare route decisions and surplus captured against PropellerSwap's public feed. Fill-only mode; submitting on-chain requires being a registered filler or resolver.</p>
             </div>
           </div>
           <div class="methodology-grid">
             <article>
               <h2>Local loop</h2>
-              <p>Start Fynd locally, subscribe to live CoW orders, run the same route search, and compare candidate routes, scores, and selected paths against the production feed.</p>
+              <p>Start Fynd locally, subscribe to live UniswapX and 1inch Fusion order streams, run the same route search and Dutch auction evaluation, and compare candidate routes, decay timing, and selected paths against the production feed.</p>
             </article>
             <article>
               <h2>Experiment surface</h2>
-              <p>Change algorithm weights, route depth, pool filters, gas assumptions, or worker-pool strategy. The point is not to trust the dashboard — it's to see whether your machine finds a better route.</p>
+              <p>Change algorithm weights, route depth, pool filters, gas assumptions, or fill-threshold strategy. The point is not to trust the dashboard — it's to see whether your machine finds a better route or fills earlier in the Dutch auction window.</p>
             </article>
           </div>
           <section class="schema-panel">
@@ -309,7 +313,8 @@
 .\scripts\start-feed.ps1
 
 # Future production stream command
-fynd-cow-stream --solve-only --compare http://127.0.0.1:4173</code></pre>
+fynd-uniswapx-stream --fill-only --compare http://127.0.0.1:4173
+fynd-fusion-stream --fill-only --compare http://127.0.0.1:4173</code></pre>
           </section>
         </section>
 

@@ -1,5 +1,6 @@
 const explorers = {
-  cow: "https://explorer.cow.fi/orders/",
+  uniswapx: "https://app.uniswap.org/",
+  fusion: "https://app.1inch.io/",
   tx: "https://etherscan.io/tx/",
 };
 
@@ -7,14 +8,17 @@ const staticDemoMode = location.hostname.endsWith("github.io");
 
 const simulatedEvents = [
   event({
-    auctionId: "0x8f3a9f6c9d1e2c0a6b18a71b902f3d5c6f0b88fd0a49be1047e0d41f63a19d2c",
+    orderId: "0x8f3a9f6c9d1e2c0a6b18a71b902f3d5c6f0b88fd0a49be1047e0d41f63a19d2c",
+    protocol: "uniswapx",
     blockNumber: 19872345,
     solverCommit: "fynd-a1b2c3d",
     pair: "USDC / WETH",
     tradeSizeUsd: 401002,
     tradeSizeDisplay: "393,139.22 USDC",
     solveTimeMs: 312,
-    outcome: "won",
+    outcome: "filled",
+    surplusBps: 12,
+    decayProgress: 18,
     route: ["CoW AMM", "Uniswap V3"],
     settlementTx: "0xd51f97be49e5b2f7b71e6dc274b8baf06d9e114df293b824d195d9ab94840135",
     chosenReason: "highest net output after gas across returned workers",
@@ -28,14 +32,17 @@ const simulatedEvents = [
     ],
   }),
   event({
-    auctionId: "0x7c12e81aa3b75c21a2968dc7d3e2359e816cf79e8f60da8a37d0b460c98e9e11",
+    orderId: "0x7c12e81aa3b75c21a2968dc7d3e2359e816cf79e8f60da8a37d0b460c98e9e11",
+    protocol: "1inch-fusion",
     blockNumber: 19872344,
     solverCommit: "fynd-a1b2c3d",
     pair: "DAI / WETH",
     tradeSizeUsd: 801240,
     tradeSizeDisplay: "785,529.41 DAI",
     solveTimeMs: 428,
-    outcome: "won",
+    outcome: "filled",
+    surplusBps: 8,
+    decayProgress: 22,
     route: ["CoW AMM", "Uniswap V3", "Balancer V2"],
     settlementTx: "0x4cf4fa62aa31c6f4f9432ed475d0db79358e5f5fa31536498e52c6ce6d4248f0",
     chosenReason: "multi-hop candidate improved net output after gas",
@@ -45,11 +52,11 @@ const simulatedEvents = [
       candidate(3, ["Curve", "Uniswap V3"], 1, "316.114309 WETH", "-0.2071%", "0.003640", "stable-hop"),
       candidate(4, ["Balancer V2"], 0, "315.990772 WETH", "-0.2461%", "0.002880", "most-liquid"),
       candidate(5, ["SushiSwap", "Uniswap V3"], 1, "315.602870 WETH", "-0.3686%", "0.003150", "fallback"),
-      candidate(6, ["CoW AMM"], 0, "315.517240 WETH", "-0.3957%", "0.001920", "cowamm-direct"),
     ],
   }),
   event({
-    auctionId: "0x3f91c21cc812720fb93d8e1f26b4fca3f3edc9e5f50df46f46315f2a25ed4928",
+    orderId: "0x3f91c21cc812720fb93d8e1f26b4fca3f3edc9e5f50df46f46315f2a25ed4928",
+    protocol: "uniswapx",
     blockNumber: 19872343,
     solverCommit: "fynd-a1b2c3d",
     pair: "WBTC / USDC",
@@ -57,26 +64,31 @@ const simulatedEvents = [
     tradeSizeDisplay: "10.21 WBTC",
     solveTimeMs: 510,
     outcome: "lost",
+    surplusBps: 0,
+    decayProgress: 35,
     route: ["Uniswap V3"],
     settlementTx: null,
     traceStatus: "partial",
-    chosenReason: "fast path returned before all candidate workers completed",
+    chosenReason: "fast path returned before all workers completed — another filler settled first",
     candidates: [
       candidate(1, ["Uniswap V3"], 0, "668,418.23 USDC", "selected", "0.002800", "fynd-production-fast", true),
       candidate(2, ["Balancer V2", "Curve"], 1, "668,103.92 USDC", "-0.0470%", "0.003620", "split-route"),
-      candidate(3, ["CoW AMM", "Uniswap V3"], 1, "667,990.14 USDC", "-0.0641%", "0.003210", "weighted-graph"),
+      candidate(3, ["Uniswap V3", "Curve"], 1, "667,990.14 USDC", "-0.0641%", "0.003210", "weighted-graph"),
       candidate(4, ["SushiSwap", "Uniswap V3"], 1, "667,410.90 USDC", "-0.1507%", "0.003980", "fallback"),
     ],
   }),
   event({
-    auctionId: "0x6de93b44b0ad18b2f734dc291a6a54239ff3877a0b4c0cc9e3d239b9e65710aa",
+    orderId: "0x6de93b44b0ad18b2f734dc291a6a54239ff3877a0b4c0cc9e3d239b9e65710aa",
+    protocol: "1inch-fusion",
     blockNumber: 19872343,
     solverCommit: "fynd-a1b2c3d",
     pair: "WETH / wstETH",
     tradeSizeUsd: 1450000,
     tradeSizeDisplay: "580.00 WETH",
     solveTimeMs: 356,
-    outcome: "won",
+    outcome: "filled",
+    surplusBps: 6,
+    decayProgress: 14,
     route: ["CoW AMM", "Curve"],
     settlementTx: "0xa1c4fbe7c41a42c203ce6d18e8c4363d9dc7ef9b280d9bdbb749f1598b432ce5",
     chosenReason: "stable pool path dominated after gas and price impact",
@@ -85,52 +97,55 @@ const simulatedEvents = [
       candidate(2, ["Curve"], 0, "579.229883 wstETH", "-0.0835%", "0.002410", "stable-direct"),
       candidate(3, ["Balancer V2", "Curve"], 1, "579.188101 wstETH", "-0.0907%", "0.003250", "split-route"),
       candidate(4, ["Uniswap V3"], 0, "578.902184 wstETH", "-0.1401%", "0.002310", "direct-v3"),
-      candidate(5, ["CoW AMM"], 0, "578.661550 wstETH", "-0.1816%", "0.001970", "cowamm-direct"),
-      candidate(6, ["Uniswap V3", "Curve"], 1, "578.428900 wstETH", "-0.2218%", "0.003870", "weighted-graph"),
     ],
   }),
   event({
-    auctionId: "0x2b44589dd6ef808cae4468d5ae77866c4a450b04f201890fcba33293443dc6ef",
+    orderId: "0x2b44589dd6ef808cae4468d5ae77866c4a450b04f201890fcba33293443dc6ef",
+    protocol: "uniswapx",
     blockNumber: 19872342,
     solverCommit: "fynd-a1b2c3d",
     pair: "USDC / DAI",
     tradeSizeUsd: 999100,
     tradeSizeDisplay: "979,509.80 USDC",
     solveTimeMs: 298,
-    outcome: "won",
-    route: ["CoW AMM"],
+    outcome: "filled",
+    surplusBps: 3,
+    decayProgress: 28,
+    route: ["Curve"],
     settlementTx: "0x7df4dc3938a6df1fb0fddfffb18209dc1e59c0293c86a5213f6e9e907d475ef0",
-    chosenReason: "single-hop CoW AMM candidate had best net stablecoin output",
+    chosenReason: "single-hop Curve stable swap had best net stablecoin output",
     candidates: [
-      candidate(1, ["CoW AMM"], 0, "999,011.02 DAI", "selected", "0.001880", "cowamm-direct", true),
-      candidate(2, ["Curve"], 0, "998,720.81 DAI", "-0.0291%", "0.002110", "stable-direct"),
-      candidate(3, ["Uniswap V3"], 0, "998,102.64 DAI", "-0.0909%", "0.002180", "direct-v3"),
-      candidate(4, ["Balancer V2", "Curve"], 1, "997,889.43 DAI", "-0.1123%", "0.003560", "split-route"),
-      candidate(5, ["SushiSwap"], 0, "996,871.12 DAI", "-0.2143%", "0.002400", "fallback"),
+      candidate(1, ["Curve"], 0, "999,011.02 DAI", "selected", "0.001880", "stable-direct", true),
+      candidate(2, ["Uniswap V3"], 0, "998,720.81 DAI", "-0.0291%", "0.002110", "direct-v3"),
+      candidate(3, ["Balancer V2", "Curve"], 1, "998,102.64 DAI", "-0.0909%", "0.003560", "split-route"),
+      candidate(4, ["SushiSwap"], 0, "996,871.12 DAI", "-0.2143%", "0.002400", "fallback"),
     ],
   }),
   event({
-    auctionId: "0x1c7784aaab21e3ad617ce8fd4300d4d88c0c742c2df4a47cd34f8134a65d9811",
+    orderId: "0x1c7784aaab21e3ad617ce8fd4300d4d88c0c742c2df4a47cd34f8134a65d9811",
+    protocol: "1inch-fusion",
     blockNumber: 19872341,
     solverCommit: "fynd-a1b2c3d",
     pair: "ARB / WETH",
     tradeSizeUsd: 27391,
     tradeSizeDisplay: "72,081.44 ARB",
     solveTimeMs: 615,
-    outcome: "won",
+    outcome: "filled",
+    surplusBps: 18,
+    decayProgress: 31,
     route: ["SushiSwap", "Uniswap V3"],
     settlementTx: "0x82f21c3182418a448b12a2514f704e1e32b854bf1c3f7144861e17fdb68e0e09",
     traceStatus: "partial",
-    chosenReason: "late worker responses did not beat selected route before deadline",
+    chosenReason: "late workers did not beat selected route before deadline",
     candidates: [
       candidate(1, ["SushiSwap", "Uniswap V3"], 1, "10.822104 WETH", "selected", "0.003220", "fynd-production-fast", true),
       candidate(2, ["Uniswap V3"], 0, "10.795440 WETH", "-0.2464%", "0.002300", "direct-v3"),
       candidate(3, ["Balancer V2", "Uniswap V3"], 1, "10.764802 WETH", "-0.5296%", "0.003640", "split-route"),
-      candidate(4, ["SushiSwap"], 0, "10.701293 WETH", "-1.1167%", "0.002210", "fallback"),
     ],
   }),
   event({
-    auctionId: "0x3ad5f109ac47aa83f87b2a70afbb703706290f8f05daa218f922e948ccdde0db",
+    orderId: "0x3ad5f109ac47aa83f87b2a70afbb703706290f8f05daa218f922e948ccdde0db",
+    protocol: "uniswapx",
     blockNumber: 19872339,
     solverCommit: "fynd-a1b2c3d",
     pair: "LINK / WETH",
@@ -138,30 +153,34 @@ const simulatedEvents = [
     tradeSizeDisplay: "5,141.40 LINK",
     solveTimeMs: 221,
     outcome: "lost",
+    surplusBps: 0,
+    decayProgress: 44,
     route: ["Balancer V2", "Uniswap V3"],
     settlementTx: null,
-    chosenReason: "weighted graph search selected best net route among available candidates",
+    chosenReason: "weighted graph found best route but another filler submitted first",
     candidates: [
       candidate(1, ["Balancer V2", "Uniswap V3"], 1, "34.921802 WETH", "selected", "0.003320", "weighted-graph", true),
       candidate(2, ["Uniswap V3"], 0, "34.887291 WETH", "-0.0988%", "0.002160", "direct-v3"),
-      candidate(3, ["CoW AMM", "Uniswap V3"], 1, "34.800441 WETH", "-0.3476%", "0.003010", "cowamm-hop"),
+      candidate(3, ["Uniswap V3", "Curve"], 1, "34.800441 WETH", "-0.3476%", "0.003010", "stable-hop"),
       candidate(4, ["SushiSwap", "Uniswap V3"], 1, "34.751000 WETH", "-0.4892%", "0.003450", "fallback"),
-      candidate(5, ["Balancer V2"], 0, "34.600187 WETH", "-0.9212%", "0.002810", "most-liquid"),
     ],
   }),
   event({
-    auctionId: "0x9be4f2aa1d3c7e0b88f1a6c20e4d9f70b3a2c51e87d0f6b3c912e4a5d8b7f022",
+    orderId: "0x9be4f2aa1d3c7e0b88f1a6c20e4d9f70b3a2c51e87d0f6b3c912e4a5d8b7f022",
+    protocol: "1inch-fusion",
     blockNumber: 19872337,
     solverCommit: "fynd-a1b2c3d",
     pair: "MKR / WETH",
     tradeSizeUsd: 142000,
     tradeSizeDisplay: "56.00 MKR",
     solveTimeMs: null,
-    outcome: "timeout",
+    outcome: "expired",
+    surplusBps: 0,
+    decayProgress: 100,
     route: [],
     settlementTx: null,
     traceStatus: "pending",
-    chosenReason: "auction expired before solver returned a valid route",
+    chosenReason: "order reached expiry before a profitable fill path was found",
     candidates: [],
   }),
 ];
@@ -173,7 +192,7 @@ function event({ traceStatus = "complete", candidates, chosenReason, ...item }) 
     routeTrace: {
       status: traceStatus,
       chosenReason,
-      capturedAt: "2026-05-14T12:00:00.000Z",
+      capturedAt: "2026-05-16T12:00:00.000Z",
       candidates,
     },
   };
@@ -194,9 +213,9 @@ let expandedId = null;
 const els = {
   feedBody: document.querySelector("#feedBody"),
   medianSolve: document.querySelector("#medianSolve"),
-  winRate: document.querySelector("#winRate"),
+  fillRate: document.querySelector("#fillRate"),
   volumeRouted: document.querySelector("#volumeRouted"),
-  candidateAverage: document.querySelector("#candidateAverage"),
+  avgSurplus: document.querySelector("#avgSurplus"),
   feedCount: document.querySelector("#feedCount"),
   completeCount: document.querySelector("#completeCount"),
   partialCount: document.querySelector("#partialCount"),
@@ -241,8 +260,8 @@ async function loadEvents() {
   const realEvents = Array.isArray(events) ? events.map(normalizeEvent).sort((a, b) => b.blockNumber - a.blockNumber) : [];
   simulationMode = realEvents.length === 0;
   feed = simulationMode ? simulatedReplay() : realEvents;
-  if ((!expandedId || !feed.some((item) => item.auctionId === expandedId)) && feed[0]) {
-    expandedId = feed[0].auctionId;
+  if ((!expandedId || !feed.some((item) => item.orderId === expandedId)) && feed[0]) {
+    expandedId = feed[0].orderId;
   }
   renderSourceMode();
   render();
@@ -258,7 +277,7 @@ function simulatedReplay() {
     const drift = ((simulationTick + index) % 5) - 2;
     replay.push({
       ...source,
-      auctionId: `${source.auctionId.slice(0, -8)}${String(simulationTick).padStart(4, "0")}${source.auctionId.slice(-4)}`,
+      orderId: `${source.orderId.slice(0, -8)}${String(simulationTick).padStart(4, "0")}${source.orderId.slice(-4)}`,
       blockNumber: baseBlock + simulationTick - index,
       solveTimeMs: typeof source.solveTimeMs === "number" ? Math.max(180, source.solveTimeMs + drift * 17) : source.solveTimeMs,
       replayedAt: new Date().toISOString(),
@@ -284,31 +303,34 @@ function renderSourceMode() {
 
   if (simulationMode) {
     title.textContent = staticDemoMode ? "GitHub Pages demo" : "Simulation mode";
-    text.textContent = "Only auction events are sample data. Tycho proxy, event ingestion, filtering, and export are production-shaped.";
+    text.textContent = "Only order events are sample data. Tycho proxy, event ingestion, filtering, and export are production-shaped.";
     if (badge) badge.classList.remove("is-production");
     dot.classList.add("pending");
     label.textContent = staticDemoMode
       ? "Static demo replay active; server endpoints are disabled on GitHub Pages"
-      : "Simulation data active; production solver event endpoint is ready";
+      : "Simulation data active; production filler event endpoint is ready";
   } else {
     title.textContent = "Production event mode";
-    text.textContent = "Rendering real PropellerSwap solver events received by POST /api/events.";
+    text.textContent = "Rendering real PropellerSwap fill events received by POST /api/events.";
     if (badge) badge.classList.add("is-production");
     dot.classList.remove("pending", "failed");
-    label.textContent = "Production solver events are being ingested";
+    label.textContent = "Production filler events are being ingested";
   }
 }
 
 function normalizeEvent(item) {
   return {
-    auctionId: String(item.auctionId || ""),
+    orderId: String(item.orderId || item.auctionId || ""),
+    protocol: item.protocol || "uniswapx",
     blockNumber: Number(item.blockNumber || 0),
     solverCommit: item.solverCommit || "unknown",
     pair: item.pair || "-",
     tradeSizeUsd: Number(item.tradeSizeUsd || 0),
     tradeSizeDisplay: item.tradeSizeDisplay || "",
     solveTimeMs: item.solveTimeMs == null ? null : Number(item.solveTimeMs),
-    outcome: item.outcome || "timeout",
+    outcome: item.outcome || "expired",
+    surplusBps: Number(item.surplusBps || 0),
+    decayProgress: item.decayProgress == null ? null : Number(item.decayProgress),
     route: Array.isArray(item.route) ? item.route : [],
     settlementTx: item.settlementTx || null,
     routeTrace: {
@@ -382,19 +404,22 @@ function renderMetrics() {
   const solved = feed.filter((item) => typeof item.solveTimeMs === "number");
   const solveTimes = solved.map((item) => item.solveTimeMs).sort((a, b) => a - b);
   const median = solveTimes.length ? solveTimes[Math.floor(solveTimes.length / 2)] : 0;
-  const submitted = feed.filter((item) => item.outcome !== "timeout").length;
-  const wins = feed.filter((item) => item.outcome === "won").length;
+  const submitted = feed.filter((item) => item.outcome !== "expired").length;
+  const fills = feed.filter((item) => item.outcome === "filled").length;
   const complete = feed.filter((item) => item.routeTrace.status === "complete").length;
   const partial = feed.filter((item) => item.routeTrace.status === "partial").length;
   const pending = feed.filter((item) => item.routeTrace.status === "pending").length;
-  const totalCandidates = feed.reduce((sum, item) => sum + item.routeTrace.candidates.length, 0);
   const volume = feed.reduce((sum, item) => sum + item.tradeSizeUsd, 0);
+  const filledWithSurplus = feed.filter((item) => item.outcome === "filled" && item.surplusBps > 0);
+  const avgSurplus = filledWithSurplus.length
+    ? Math.round(filledWithSurplus.reduce((sum, item) => sum + item.surplusBps, 0) / filledWithSurplus.length)
+    : 0;
 
   els.medianSolve.textContent = `${median} ms`;
-  els.winRate.textContent = submitted ? `${((wins / submitted) * 100).toFixed(1)}%` : "0%";
+  els.fillRate.textContent = submitted ? `${((fills / submitted) * 100).toFixed(1)}%` : "0%";
   els.volumeRouted.textContent = `$${compact(volume)}`;
-  els.candidateAverage.textContent = feed.length ? (totalCandidates / feed.length).toFixed(1) : "0";
-  [els.medianSolve, els.winRate, els.volumeRouted, els.candidateAverage].forEach(pop);
+  els.avgSurplus.textContent = `${avgSurplus} bps`;
+  [els.medianSolve, els.fillRate, els.volumeRouted, els.avgSurplus].forEach(pop);
   els.completeCount.textContent = complete;
   els.partialCount.textContent = partial;
   els.pendingCount.textContent = pending;
@@ -407,19 +432,21 @@ function pop(element) {
 }
 
 function renderSpotlight() {
-  const item = feed.find((event) => event.outcome === "won" && event.routeTrace.candidates.length) || feed.find((event) => event.routeTrace.candidates.length);
+  const item = feed.find((event) => event.outcome === "filled" && event.routeTrace.candidates.length) || feed.find((event) => event.routeTrace.candidates.length);
   if (!item) {
     els.spotlightPair.textContent = "-";
-    els.spotlightSummary.textContent = "Waiting for the latest route trace.";
-    els.spotlightSolve.textContent = "- ms";
+    els.spotlightSummary.textContent = "Waiting for the latest fill.";
+    els.spotlightSolve.textContent = "— bps";
     els.spotlightCandidates.innerHTML = "";
     return;
   }
 
   const chosen = item.routeTrace.candidates.find((candidate) => candidate.chosen) || item.routeTrace.candidates[0];
+  const protocolLabel = item.protocol === "uniswapx" ? "UniswapX" : "1inch Fusion";
+  const decayNote = item.decayProgress != null ? ` — ${item.decayProgress}% into Dutch auction` : "";
   els.spotlightPair.textContent = item.pair;
-  els.spotlightSolve.textContent = `${item.solveTimeMs ?? "-"} ms`;
-  els.spotlightSummary.textContent = `${item.outcome.toUpperCase()} at block ${item.blockNumber}: ${chosen.route.join(" → ")} selected because ${item.routeTrace.chosenReason}.`;
+  els.spotlightSolve.textContent = item.surplusBps ? `+${item.surplusBps} bps` : `${item.solveTimeMs ?? "—"} ms`;
+  els.spotlightSummary.textContent = `${item.outcome.toUpperCase()} on ${protocolLabel} at block ${item.blockNumber}: ${chosen.route.join(" → ")} selected because ${item.routeTrace.chosenReason}${decayNote}.`;
   els.spotlightCandidates.innerHTML = item.routeTrace.candidates.slice(0, 4).map((candidate) => `
     <div class="route-step ${candidate.chosen ? "is-chosen" : ""}">
       <span class="route-rank">#${candidate.rank}</span>
@@ -437,7 +464,7 @@ function renderFeed() {
 
   if (!visible.length) {
     const row = document.createElement("tr");
-    row.innerHTML = `<td colspan="10"><div class="empty-state"><strong>No events match the current filters.</strong><span>Clear filters or post production CoW/Fynd events to <span class="mono">POST /api/events</span>.</span></div></td>`;
+    row.innerHTML = `<td colspan="10"><div class="empty-state"><strong>No events match the current filters.</strong><span>Clear filters or post production UniswapX/Fusion fill events to <span class="mono">POST /api/events</span>.</span></div></td>`;
     els.feedBody.append(row);
     return;
   }
@@ -445,21 +472,25 @@ function renderFeed() {
   visible.forEach((item) => {
     const row = document.createElement("tr");
     row.className = `feed-row ${item.outcome}`;
+    const protocolLabel = item.protocol === "uniswapx" ? "UX" : "1i";
+    const surplusCell = item.outcome === "filled" && item.surplusBps
+      ? `<span class="surplus-pos">+${item.surplusBps} bps</span>`
+      : `<span class="muted">—</span>`;
     row.innerHTML = `
-      <td><button class="expand-button" type="button" aria-label="Inspect route for auction ${short(item.auctionId)}" aria-expanded="${expandedId === item.auctionId}" data-expand="${item.auctionId}">${expandedId === item.auctionId ? "−" : "+"}</button><span class="status ${item.outcome}">${item.outcome}</span></td>
-      <td>${item.solveTimeMs ? `<span class="${item.solveTimeMs > 500 ? "solve-slow" : "solve-fast"}">${item.solveTimeMs} ms</span>` : `<span class="muted">-</span>`}</td>
+      <td><button class="expand-button" type="button" aria-label="Inspect route for order ${short(item.orderId)}" aria-expanded="${expandedId === item.orderId}" data-expand="${item.orderId}">${expandedId === item.orderId ? "−" : "+"}</button><span class="protocol-tag protocol-${item.protocol}">${protocolLabel}</span><span class="status ${item.outcome}">${item.outcome}</span></td>
+      <td>${item.solveTimeMs ? `<span class="${item.solveTimeMs > 500 ? "solve-slow" : "solve-fast"}">${item.solveTimeMs} ms</span>` : `<span class="muted">—</span>`}</td>
       <td class="mono">${item.pair}</td>
-      <td><span class="mono">${item.tradeSizeDisplay || "-"}</span><br><span class="muted">$${number(item.tradeSizeUsd, 0)}</span></td>
-      <td class="route">${item.route.length ? item.route.join(" → ") : `<span class="muted">No solution submitted</span>`}</td>
+      <td><span class="mono">${item.tradeSizeDisplay || "—"}</span><br><span class="muted">$${number(item.tradeSizeUsd, 0)}</span></td>
+      <td>${surplusCell}</td>
+      <td class="route">${item.route.length ? item.route.join(" → ") : `<span class="muted">No route</span>`}</td>
       <td class="mono">${item.blockNumber}</td>
-      <td class="mono">${short(item.auctionId)}</td>
-      <td class="mono">${item.solverCommit}</td>
+      <td class="mono">${short(item.orderId)}</td>
       <td>${traceBadge(item)}</td>
       <td><span class="links">${verificationLinks(item)}</span></td>
     `;
     els.feedBody.append(row);
 
-    if (expandedId === item.auctionId) {
+    if (expandedId === item.orderId) {
       els.feedBody.append(detailsRow(item));
     }
   });
@@ -468,10 +499,14 @@ function renderFeed() {
 function detailsRow(item) {
   const template = document.querySelector("#routeDetailsTemplate");
   const node = template.content.firstElementChild.cloneNode(true);
+  const protocolFull = item.protocol === "uniswapx" ? "UniswapX" : "1inch Fusion";
   node.querySelector(".details-meta").innerHTML = `
-    <span>Auction <span class="mono">${item.auctionId}</span></span>
+    <span>Order <span class="mono">${item.orderId}</span></span>
+    <span>Protocol <span class="mono">${protocolFull}</span></span>
     <span>Block <span class="mono">${item.blockNumber}</span></span>
-    <span>Solve <span class="mono">${item.solveTimeMs || "-"} ms</span></span>
+    <span>Solve <span class="mono">${item.solveTimeMs ?? "—"} ms</span></span>
+    ${item.outcome === "filled" ? `<span>Surplus <span class="mono">+${item.surplusBps} bps</span></span>` : ""}
+    ${item.decayProgress != null ? `<span>Decay progress <span class="mono">${item.decayProgress}% into auction</span></span>` : ""}
     <span>Trace <span class="mono">${item.routeTrace.status}</span></span>
     <span>Chosen because <span class="mono">${item.routeTrace.chosenReason}</span></span>
   `;
@@ -518,9 +553,13 @@ function traceBadge(item) {
 }
 
 function verificationLinks(item) {
-  const cow = `<a href="${explorers.cow}${item.auctionId}" target="_blank" rel="noreferrer">CoW</a>`;
-  const tx = item.settlementTx ? `<a href="${explorers.tx}${item.settlementTx}" target="_blank" rel="noreferrer">Tx</a>` : `<span class="muted">Tx</span>`;
-  return `${cow}${tx}`;
+  const protocolHref = item.protocol === "uniswapx" ? explorers.uniswapx : explorers.fusion;
+  const protocolLabel = item.protocol === "uniswapx" ? "UX" : "1i";
+  const proto = `<a href="${protocolHref}" target="_blank" rel="noreferrer">${protocolLabel}</a>`;
+  const tx = item.settlementTx
+    ? `<a href="${explorers.tx}${item.settlementTx}" target="_blank" rel="noreferrer">Tx</a>`
+    : `<span class="muted">Tx</span>`;
+  return `${proto}${tx}`;
 }
 
 function renderRawPreview() {
@@ -542,18 +581,20 @@ function exportRange() {
 }
 
 function csv(rows) {
-  const columns = ["auctionId", "blockNumber", "solverCommit", "pair", "tradeSizeUsd", "solveTimeMs", "outcome", "route", "settlementTx", "routeTraceStatus", "candidateCount", "chosenReason"];
+  const columns = ["orderId", "protocol", "blockNumber", "pair", "tradeSizeUsd", "solveTimeMs", "outcome", "surplusBps", "decayProgress", "route", "settlementTx", "routeTraceStatus", "candidateCount", "chosenReason"];
   const lines = [columns.join(",")];
   rows.forEach((item) => {
     lines.push([
-      item.auctionId,
+      item.orderId,
+      item.protocol,
       item.blockNumber,
-      item.solverCommit,
       item.pair,
       item.tradeSizeUsd,
       item.solveTimeMs ?? "",
       item.outcome,
-      item.route.join(" -> "),
+      item.surplusBps,
+      item.decayProgress ?? "",
+      item.route.join(" → "),
       item.settlementTx ?? "",
       item.routeTrace.status,
       item.routeTrace.candidates.length,
